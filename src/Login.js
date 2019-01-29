@@ -6,21 +6,23 @@ import axios from 'axios';
 function Login() {
   const [isSignedIn, setSignedIn] = useState(false);
   const [isValidEmail, setIsValidEmail] = useState(false);
-  const [name] = useState('');
-  const [email] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
-  async function loginResponse({ tokenId }) {
-    // eslint-disable-next-line quote-props
+  async function loginResponse({ tokenId, profileObj: { name, email } }) {
+    
     if (tokenId) {
-      const { status } = await axios.post('http://localhost:8080/users/verify', null, { headers: { Authorization: `Bearer ${tokenId}` } });
+      const { status, data: token } = await axios.post('http://localhost:8080/users/verify', { email }, { headers: { Authorization: `Bearer ${tokenId}` } });
       if (status === 200) {
         setSignedIn(true);
         setIsValidEmail(true);
+        localStorage.setItem('token', token);
       } else if (status === 401) {
         setSignedIn(true);
         setIsValidEmail(false);
+        setName(name);
+        setEmail(email);
       }
-      console.log(status);
     }
   }
 
@@ -46,9 +48,7 @@ function Login() {
     );
   }
 
-  return (
-    <Redirect to="/vote" />
-  );
+  return <Redirect to="/vote" />;
 }
 
 export default Login;
