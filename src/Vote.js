@@ -35,12 +35,14 @@ function Vote() {
   async function getCandidates() {
     const { data } = await axios.get('/vote/candidates');
     setCandidates(data);
-    setSelected(Object.keys(data)
-      .reduce((obj, position) => {
-        const newObj = obj;
-        newObj[position] = 'Abstain';
-        return newObj;
-      }, {}));
+    setSelected(
+      Object.entries(data)
+        .reduce((obj, [position, candidates]) => {
+          const newObj = obj;
+          newObj[position] = candidates.filter(({ name }) => name === 'Abstain')[0].id;
+          return newObj;
+        }, {})
+    );
     setLoading(false);
   }
 
@@ -67,6 +69,11 @@ function Vote() {
     });
   }
 
+  async function submitVote() {
+    const { status } = await axios.post('/vote/submit', { candidates: Object.values(selected) }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+    console.log(status);
+  }
+
   const classes = useStyles();
   return (
     <Card className={classes.root}>
@@ -77,14 +84,14 @@ function Vote() {
             Object.entries(candidatesObj)
               .map(([position, candidates], index) => (
                 <div key={position}>
-                  <FormLabel component="legend" className={index > 0 ? classes.subHeader : ''}>{position}</FormLabel>
-                  <RadioGroup aria-label={position} name={position} value={selected[position]} onChange={handleChange}>
-                    {candidates.map(candidate => (
+                  <FormLabel key={`${position}-header`} component="legend" className={index > 0 ? classes.subHeader : ''}>{position}</FormLabel>
+                  <RadioGroup aria-label={position} name={position} value={selected[position].toString()} onChange={handleChange}>
+                    {candidates.map(({ id, name }) => (
                       <FormControlLabel
-                        key={`${position}-${candidate}`}
+                        key={`${position}-${name}`}
                         control={<Radio color="secondary" />}
-                        label={candidate}
-                        value={candidate}
+                        label={name}
+                        value={id.toString()}
                       />
                     ))}
                   </RadioGroup>
@@ -94,7 +101,7 @@ function Vote() {
         </FormControl>
       </CardContent>
       <CardActions>
-        <Button size="small" color="secondary" onClick={() => console.log('submit')}>
+        <Button size="small" color="secondary" onClick={() => submitVote()}>
           Submit
         </Button>
       </CardActions>
