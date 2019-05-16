@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import { GoogleLogin } from 'react-google-login/index';
-import axios from 'axios/index';
+import Typography from '@material-ui/core/Typography';
+
+import request from '../network';
 
 function Login() {
   const [isSignedIn, setSignedIn] = useState(false);
@@ -9,15 +11,18 @@ function Login() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
-  async function loginResponse({ tokenId, profileObj: { name, email } }) {
-
+  async function loginResponse({ tokenId, profileObj }) {
     if (tokenId) {
-      const { status, data: token } = await axios.post('http://localhost:8080/users/verify', { email }, { headers: { Authorization: `Bearer ${tokenId}` } });
-      if (status === 200) {
+      const { name, email } = profileObj;
+      const { ok, unauthorized, text: token } = await request
+        .post('/users/verify')
+        .set('Authorization', `Bearer ${tokenId}`)
+        .send({ email });
+      if (ok) {
         setSignedIn(true);
         setIsValidEmail(true);
         localStorage.setItem('token', token);
-      } else if (status === 401) {
+      } else if (unauthorized) {
         setSignedIn(true);
         setIsValidEmail(false);
         setName(name);

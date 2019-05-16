@@ -11,8 +11,9 @@ import Radio from '@material-ui/core/Radio/index';
 import RadioGroup from '@material-ui/core/RadioGroup/index';
 import CardActions from '@material-ui/core/CardActions/index';
 import Button from '@material-ui/core/Button/index';
-import axios from 'axios/index';
 import { makeStyles } from '@material-ui/styles';
+
+import request from '../network';
 
 const useStyles = makeStyles({
   root: {
@@ -33,7 +34,7 @@ function Vote() {
   const [selected, setSelected] = useState([]);
 
   async function getCandidates() {
-    const { data } = await axios.get('/vote/candidates');
+    const { body: data } = await request.get('/vote/candidates');
     setCandidates(data);
     setSelected(
       Object.entries(data)
@@ -72,8 +73,16 @@ function Vote() {
   }
 
   async function submitVote() {
-    const { status } = await axios.post('/vote/submit', { candidates: Object.values(selected) }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-    console.log(status);
+    showMessage('Submitting vote...');
+    const { ok } = await request.post('/vote/submit')
+      .send({ candidates: Object.values(selected) })
+      .set('Authorization', `Bearer ${localStorage.getItem('token')}`);
+
+    if (ok) {
+      showMessage('Vote successfully submitted!');
+    } else {
+      showMessage('Failed to submit vote! Please wait a few minutes before trying again...');
+    }
   }
 
   return (
