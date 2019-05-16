@@ -7,6 +7,7 @@ import { makeStyles } from '@material-ui/styles';
 
 import request from '../network';
 import AlreadyVotedCard from '../components/AlreadyVotedCard';
+import MessageCard from '../components/MessageCard';
 
 const useStyles = makeStyles({
   root: {
@@ -23,15 +24,15 @@ function Login() {
   const [hasAlreadyVoted, setAlreadyVoted] = useState(false);
   const [isSignedIn, setSignedIn] = useState(false);
   const [isValidEmail, setIsValidEmail] = useState(false);
+  const [isValidVoter, setIsValidVoter] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
   async function loginResponse({ tokenId, profileObj }) {
     if (tokenId) {
       const { name, email } = profileObj;
-      const {
-        ok, unauthorized, status, text: token, body,
-      } = await request
+      console.log(profileObj, name, email);
+      const { ok, unauthorized, forbidden, status, text: token, body } = await request
         .post('/users/verify')
         .ok(res => res.status < 500)
         .set('Authorization', `Bearer ${tokenId}`)
@@ -39,12 +40,20 @@ function Login() {
       if (ok) {
         setSignedIn(true);
         setIsValidEmail(true);
+        setIsValidVoter(true);
         localStorage.setItem('token', token);
       } else if (unauthorized) {
-        setSignedIn(true);
-        setIsValidEmail(false);
         setName(name);
         setEmail(email);
+        setSignedIn(true);
+        setIsValidVoter(true);
+        setIsValidEmail(false);
+      } else if (forbidden) {
+        setName(name);
+        setEmail(email);
+        setSignedIn(true);
+        setIsValidVoter(false);
+        setIsValidEmail(true);
       } else if (status === 409) {
         setAlreadyVoted(true);
       } else if (status === 412) {
@@ -52,6 +61,14 @@ function Login() {
         setCanVote(false);
       }
     }
+  }
+
+  function reset() {
+    setSignedIn(false);
+    setIsValidEmail(false);
+    setIsValidVoter(false);
+    setAlreadyVoted(false);
+    setCanVote(true);
   }
 
   const classes = useStyles();
@@ -84,7 +101,7 @@ function Login() {
         </Typography>
         <GoogleLogin
           className={classes.margin}
-          clientId="911039919657-o235c8rl1qr59hlnr2djoiuivqbqmib2.apps.googleusercontent.com"
+          clientId="850718226563-53acf0gfdhhc8dtk9c0h9cjt5ntiagfv.apps.googleusercontent.com"
           buttonText="Log in with your uOttawa email"
           hostedDomain="uottawa.ca"
           onSuccess={loginResponse}
@@ -94,13 +111,27 @@ function Login() {
     );
   }
 
+  if (!isValidVoter) {
+    return (
+      <MessageCard
+        className={classes.root}
+        message={`Sorry ${name}! You're not on the list of valid voters. If you believe this is a mistake, email rushil.perera1081@gmail.com`}
+        actions={[
+          <Button key="okay-btn" color="secondary" onClick={reset}>Okay</Button>,
+        ]}
+      />
+    );
+  }
+
   if (!isValidEmail) {
     return (
-      <div className={classes.root}>
-        {/* eslint-disable-next-line react/jsx-one-expression-per-line */}
-        <Typography variant="h5">Sorry, {name}! {email} is an invalid email, please sign in with your uOttawa email.</Typography>
-        <Button variant="contained">Okay</Button>
-      </div>
+      <MessageCard
+        className={classes.root}
+        message={`Sorry, ${name}! ${email} is an invalid email, please sign in with your uOttawa email.`}
+        actions={[
+          <Button key="okay-btn" color="secondary" onClick={reset}>Okay</Button>,
+        ]}
+      />
     );
   }
 
