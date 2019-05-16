@@ -11,6 +11,7 @@ import RadioGroup from '@material-ui/core/RadioGroup/index';
 import CardActions from '@material-ui/core/CardActions/index';
 import Snackbar from '@material-ui/core/Snackbar';
 import Button from '@material-ui/core/Button/index';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/styles';
 import { Redirect } from 'react-router-dom';
 
@@ -29,6 +30,9 @@ const useStyles = makeStyles({
   },
   subHeader: {
     marginTop: '16px',
+  },
+  instructions: {
+    margin: '0 16px',
   },
 });
 
@@ -92,7 +96,7 @@ function Vote() {
             const newObj = obj;
             newObj[position] = candidates.filter(({ name }) => name === 'Abstain')[0].id;
             return newObj;
-          }, {})
+          }, {}),
       );
     }
     setLoading(false);
@@ -168,6 +172,15 @@ function Vote() {
 
   return (
     <>
+      <Typography className={classes.instructions} variant="body1" gutterBottom>
+        If you are confident that any of the candidates are not going to do well in the position they are running for, select
+        {' '}
+        <strong>No Confidence.</strong>
+        {' '}
+        If you would rather not vote for any of the candidates for a certain position for any other reason, select
+        {' '}
+        <strong>Abstain.</strong>
+      </Typography>
       <Card className={classes.root}>
         <CardHeader className={classes.title} title="Vote for your next ..." />
         <CardContent>
