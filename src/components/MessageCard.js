@@ -30,7 +30,7 @@ export default function MessageCard({ message, title, actions }) {
   return (
     <Card className={classes.root}>
       <CardContent>
-        {title && <Typography variant="h4" gutterBottom>{title}</Typography>}
+        {title && <Typography variant="h6" gutterBottom>{title}</Typography>}
         <Typography variant="body1">{message}</Typography>
       </CardContent>
       {

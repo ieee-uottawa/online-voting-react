@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Redirect } from 'react-router-dom';
+import dayjs from 'dayjs';
 
 import MessageCard from '../components/MessageCard';
 import request from '../network';
@@ -15,7 +16,7 @@ export default function CanVote(props) {
       const { notStarted, isClosed, date: voteDate } = state;
       setNotStarted(notStarted);
       setClosed(isClosed);
-      setDate(voteDate);
+      setDate(dayjs(voteDate).format('MMMM D [at] h:mm A'));
     };
 
     if (!props.location.state) {
@@ -32,14 +33,14 @@ export default function CanVote(props) {
   }, [props.location.state]);
 
   if (isLoading) {
-    return <MessageCard message="Loading..." />;
+    return <MessageCard title="Is the voting system open?" message="Loading..." />;
   }
 
   if (votingNotStarted) {
-    return <MessageCard message={`Voting begins at ${date}`} title="Voting has not started yet" />;
+    return <MessageCard message={`Voting begins at ${date}`} title="Is the voting system open?" />;
     // eslint-disable-next-line no-else-return
   } else if (votingEnded) {
-    return <MessageCard message={`Voting ended at ${date}`} title="Voting ended" />;
+    return <MessageCard message={`Voting ended at ${date}`} title="Is the voting system open?" />;
   } else {
     return <Redirect to="/login" />;
   }
