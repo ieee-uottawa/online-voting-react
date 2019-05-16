@@ -14,9 +14,10 @@ import Button from '@material-ui/core/Button/index';
 import { makeStyles } from '@material-ui/styles';
 import { Redirect } from 'react-router-dom';
 
-import MessageCard from '../components/MessageCard';
 import request from '../network';
+import MessageCard from '../components/MessageCard';
 import AlreadyVotedCard from '../components/AlreadyVotedCard';
+import SuccessfullyVotedCard from '../components/SuccessfullyVotedCard';
 
 const useStyles = makeStyles({
   root: {
@@ -35,6 +36,8 @@ function Vote() {
   const [canVote, setCanVote] = useState(true);
   const [canVoteBody, setCanVoteBody] = useState(undefined);
   const [hasAlreadyVoted, setAlreadyVoted] = useState(false);
+  const [hasSuccessfullyVoted, setSuccessfullyVoted] = useState(false);
+
   const [isLoading, setLoading] = useState(true);
   const [candidatesObj, setCandidates] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -141,7 +144,7 @@ function Vote() {
 
     try {
       if (ok) {
-        showMessage('Vote successfully submitted!');
+        setSuccessfullyVoted(true);
       } else if (status === 409) {
         setAlreadyVoted(true);
       } else if (status === 412) {
@@ -157,6 +160,10 @@ function Vote() {
 
   if (hasAlreadyVoted) {
     return <AlreadyVotedCard />;
+  }
+
+  if (hasSuccessfullyVoted) {
+    return <SuccessfullyVotedCard />;
   }
 
   return (
