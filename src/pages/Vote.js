@@ -12,10 +12,11 @@ import CardActions from '@material-ui/core/CardActions/index';
 import Snackbar from '@material-ui/core/Snackbar';
 import Button from '@material-ui/core/Button/index';
 import { makeStyles } from '@material-ui/styles';
+import { Redirect } from 'react-router-dom';
 
 import MessageCard from '../components/MessageCard';
 import request from '../network';
-import { Redirect } from 'react-router-dom';
+import AlreadyVotedCard from '../components/AlreadyVotedCard';
 
 const useStyles = makeStyles({
   root: {
@@ -33,6 +34,7 @@ const useStyles = makeStyles({
 function Vote() {
   const [canVote, setCanVote] = useState(true);
   const [canVoteBody, setCanVoteBody] = useState(undefined);
+  const [hasAlreadyVoted, setAlreadyVoted] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [candidatesObj, setCandidates] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -140,6 +142,8 @@ function Vote() {
     try {
       if (ok) {
         showMessage('Vote successfully submitted!');
+      } else if (status === 409) {
+        setAlreadyVoted(true);
       } else if (status === 412) {
         setCanVoteBody(body);
         setCanVote(false);
@@ -149,6 +153,10 @@ function Vote() {
     } catch (e) {
       showMessage('Failed to submit vote! Please wait a few minutes before trying again...');
     }
+  }
+
+  if (hasAlreadyVoted) {
+    return <AlreadyVotedCard />;
   }
 
   return (

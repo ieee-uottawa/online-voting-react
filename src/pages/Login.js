@@ -3,9 +3,10 @@ import { Redirect } from 'react-router-dom';
 import { GoogleLogin } from 'react-google-login';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import {makeStyles} from '@material-ui/styles';
+import { makeStyles } from '@material-ui/styles';
 
 import request from '../network';
+import AlreadyVotedCard from '../components/AlreadyVotedCard';
 
 const useStyles = makeStyles({
   root: {
@@ -16,6 +17,7 @@ const useStyles = makeStyles({
 function Login() {
   const [canVote, setCanVote] = useState(true);
   const [canVoteBody, setCanVoteBody] = useState(undefined);
+  const [hasAlreadyVoted, setAlreadyVoted] = useState(false);
   const [isSignedIn, setSignedIn] = useState(false);
   const [isValidEmail, setIsValidEmail] = useState(false);
   const [name, setName] = useState('');
@@ -40,6 +42,8 @@ function Login() {
         setIsValidEmail(false);
         setName(name);
         setEmail(email);
+      } else if (status === 409) {
+        setAlreadyVoted(true);
       } else if (status === 412) {
         setCanVoteBody(body);
         setCanVote(false);
@@ -48,6 +52,10 @@ function Login() {
   }
 
   const classes = useStyles();
+
+  if (hasAlreadyVoted) {
+    return <AlreadyVotedCard />;
+  }
 
   if (!canVote) {
     return (
