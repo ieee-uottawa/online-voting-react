@@ -140,7 +140,10 @@ function Vote() {
     const { ok, status, body } = await request
       .post('/vote/submit')
       .ok(res => res.status < 500)
-      .send({ candidates: Object.values(selected) })
+      .send({
+        candidates: Object.values(selected)
+          .map(({ id }) => id),
+      })
       .set('Authorization', `Bearer ${localStorage.getItem('token')}`);
 
     try {
