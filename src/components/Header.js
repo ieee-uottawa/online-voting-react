@@ -1,6 +1,6 @@
 import React from 'react';
-import AppBar from '@material-ui/core/AppBar/index';
-import Toolbar from '@material-ui/core/Toolbar/index';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
 import { makeStyles } from '@material-ui/styles';
 
 import logo from '../uottawa_branch_logo-1.png';
