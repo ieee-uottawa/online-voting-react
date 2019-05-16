@@ -37,10 +37,10 @@ export default function CanVote(props) {
   }
 
   if (votingNotStarted) {
-    return <MessageCard message={`Voting begins at ${date}`} title="Is the voting system open?" />;
+    return <MessageCard message={`Voting begins on ${date}`} title="Is the voting system open?" />;
     // eslint-disable-next-line no-else-return
   } else if (votingEnded) {
-    return <MessageCard message={`Voting ended at ${date}`} title="Is the voting system open?" />;
+    return <MessageCard message={`Voting ended on ${date}`} title="Is the voting system open?" />;
   } else {
     return <Redirect to="/login" />;
   }
