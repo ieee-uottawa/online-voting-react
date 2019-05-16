@@ -115,32 +115,6 @@ function Vote() {
     getCandidates();
   }, []);
 
-  const classes = useStyles();
-
-  if (localStorage.getItem('token') === null) {
-    return <Redirect to="/login" />;
-  }
-
-  if (!canVote) {
-    return (
-      <Redirect
-        to={{
-          pathname: '/',
-          state: canVoteBody,
-        }}
-      />
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div>
-        <CircularProgress />
-        <MessageCard message="Loading..." />
-      </div>
-    );
-  }
-
   function handleChange(event) {
     const node = event.target;
 
@@ -170,6 +144,7 @@ function Vote() {
       .set('Authorization', `Bearer ${localStorage.getItem('token')}`);
 
     try {
+      console.log(ok, status, body);
       if (ok) {
         localStorage.removeItem('token');
         setSuccessfullyVoted(true);
@@ -186,6 +161,36 @@ function Vote() {
     }
   }
 
+  function handleShowConfirmationDialog() {
+    setShowDialog(true);
+  }
+
+  function closeConfirmationDialog() {
+    setShowDialog(false);
+  }
+
+  const classes = useStyles();
+
+  if (!canVote) {
+    return (
+      <Redirect
+        to={{
+          pathname: '/',
+          state: canVoteBody,
+        }}
+      />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div>
+        <CircularProgress />
+        <MessageCard message="Loading..." />
+      </div>
+    );
+  }
+
   if (hasAlreadyVoted) {
     return <AlreadyVotedCard />;
   }
@@ -194,12 +199,8 @@ function Vote() {
     return <SuccessfullyVotedCard />;
   }
 
-  function handleShowConfirmationDialog() {
-    setShowDialog(true);
-  }
-
-  function closeConfirmationDialog() {
-    setShowDialog(false);
+  if (localStorage.getItem('token') === null) {
+    return <Redirect to="/login" />;
   }
 
   return (
