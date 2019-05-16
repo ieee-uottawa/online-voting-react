@@ -73,6 +73,10 @@ function Login() {
 
   const classes = useStyles();
 
+  if (localStorage.getItem('token') !== null) {
+    return <Redirect to="/vote" />;
+  }
+
   if (hasAlreadyVoted) {
     return <AlreadyVotedCard />;
   }
