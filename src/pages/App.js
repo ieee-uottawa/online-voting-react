@@ -1,19 +1,36 @@
 import React from 'react';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { makeStyles } from '@material-ui/styles';
 
 import Login from './Login';
 import Vote from './Vote';
+import CanVote from './CanVote';
 import Header from '../components/Header';
 
-const App = () => (
-  <Router>
-    <div className="App">
-      <Header />
+const useStyles = makeStyles({
+  root: {
+    padding: '16px 0',
+  },
+});
 
-      <Route path="/login" component={Login} />
-      <Route path="/vote" component={Vote} />
-    </div>
-  </Router>
-);
+const App = () => {
+  const classes = useStyles();
+
+  return (
+    <Router>
+      <>
+        <Header />
+
+        <div className={classes.root}>
+          <Switch>
+            <Route path="/login" component={Login} />
+            <Route path="/vote" component={Vote} />
+            <Route component={CanVote} />
+          </Switch>
+        </div>
+      </>
+    </Router>
+  );
+};
 
 export default App;

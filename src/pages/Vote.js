@@ -15,6 +15,7 @@ import { makeStyles } from '@material-ui/styles';
 
 import MessageCard from '../components/MessageCard';
 import request from '../network';
+import { Redirect } from 'react-router-dom';
 
 const useStyles = makeStyles({
   root: {
@@ -30,6 +31,8 @@ const useStyles = makeStyles({
 });
 
 function Vote() {
+  const [canVote, setCanVote] = useState(true);
+  const [canVoteBody, setCanVoteBody] = useState(undefined);
   const [isLoading, setLoading] = useState(true);
   const [candidatesObj, setCandidates] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -69,16 +72,24 @@ function Vote() {
   }
 
   async function getCandidates() {
-    const { body: data } = await request.get('/vote/candidates');
-    setCandidates(data);
-    setSelected(
-      Object.entries(data)
-        .reduce((obj, [position, candidates]) => {
-          const newObj = obj;
-          newObj[position] = candidates.filter(({ name }) => name === 'Abstain')[0].id;
-          return newObj;
-        }, {})
-    );
+    const { body: data, status } = await request
+      .get('/vote/candidates')
+      .ok(res => res.status < 500);
+
+    if (status === 412) {
+      setCanVoteBody(data);
+      setCanVote(false);
+    } else {
+      setCandidates(data);
+      setSelected(
+        Object.entries(data)
+          .reduce((obj, [position, candidates]) => {
+            const newObj = obj;
+            newObj[position] = candidates.filter(({ name }) => name === 'Abstain')[0].id;
+            return newObj;
+          }, {})
+      );
+    }
     setLoading(false);
   }
 
@@ -88,6 +99,17 @@ function Vote() {
   }, []);
 
   const classes = useStyles();
+
+  if (!canVote) {
+    return (
+      <Redirect
+        to={{
+          pathname: '/',
+          state: canVoteBody,
+        }}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
@@ -109,13 +131,22 @@ function Vote() {
 
   async function submitVote() {
     showMessage('Submitting vote...');
-    const { ok } = await request.post('/vote/submit')
+    const { ok, status, body } = await request
+      .post('/vote/submit')
+      .ok(res => res.status < 500)
       .send({ candidates: Object.values(selected) })
       .set('Authorization', `Bearer ${localStorage.getItem('token')}`);
 
-    if (ok) {
-      showMessage('Vote successfully submitted!');
-    } else {
+    try {
+      if (ok) {
+        showMessage('Vote successfully submitted!');
+      } else if (status === 412) {
+        setCanVoteBody(body);
+        setCanVote(false);
+      } else {
+        showMessage('Failed to submit vote! Please wait a few minutes before trying again...');
+      }
+    } catch (e) {
       showMessage('Failed to submit vote! Please wait a few minutes before trying again...');
     }
   }
