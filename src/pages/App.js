@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 
 import Login from './Login';
 import Vote from './Vote';
-import Header from './Header';
+import Header from '../components/Header';
 
 const App = () => (
   <Router>

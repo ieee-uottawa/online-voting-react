@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Typography from '@material-ui/core/Typography';
-import FormControl from '@material-ui/core/FormControl';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormLabel from '@material-ui/core/FormLabel';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import CardActions from '@material-ui/core/CardActions';
-import Button from '@material-ui/core/Button';
-import axios from 'axios';
+import Card from '@material-ui/core/Card/index';
+import CardHeader from '@material-ui/core/CardHeader/index';
+import CardContent from '@material-ui/core/CardContent/index';
+import CircularProgress from '@material-ui/core/CircularProgress/index';
+import Typography from '@material-ui/core/Typography/index';
+import FormControl from '@material-ui/core/FormControl/index';
+import FormControlLabel from '@material-ui/core/FormControlLabel/index';
+import FormLabel from '@material-ui/core/FormLabel/index';
+import Radio from '@material-ui/core/Radio/index';
+import RadioGroup from '@material-ui/core/RadioGroup/index';
+import CardActions from '@material-ui/core/CardActions/index';
+import Button from '@material-ui/core/Button/index';
+import axios from 'axios/index';
 import { makeStyles } from '@material-ui/styles';
 
 const useStyles = makeStyles({
@@ -51,6 +51,8 @@ function Vote() {
     getCandidates();
   }, []);
 
+  const classes = useStyles();
+
   if (isLoading) {
     return (
       <div>
@@ -74,7 +76,6 @@ function Vote() {
     console.log(status);
   }
 
-  const classes = useStyles();
   return (
     <Card className={classes.root}>
       <CardHeader className={classes.title} title="Vote for your next ..." />

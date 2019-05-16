@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Redirect } from 'react-router-dom';
-import { GoogleLogin } from 'react-google-login';
-import axios from 'axios';
+import { GoogleLogin } from 'react-google-login/index';
+import axios from 'axios/index';
 
 function Login() {
   const [isSignedIn, setSignedIn] = useState(false);
@@ -10,7 +10,7 @@ function Login() {
   const [email, setEmail] = useState('');
 
   async function loginResponse({ tokenId, profileObj: { name, email } }) {
-    
+
     if (tokenId) {
       const { status, data: token } = await axios.post('http://localhost:8080/users/verify', { email }, { headers: { Authorization: `Bearer ${tokenId}` } });
       if (status === 200) {
