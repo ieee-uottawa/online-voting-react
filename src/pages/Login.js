@@ -12,6 +12,9 @@ const useStyles = makeStyles({
   root: {
     padding: '0 16px',
   },
+  margin: {
+    marginTop: '16px',
+  },
 });
 
 function Login() {
@@ -71,14 +74,18 @@ function Login() {
   if (!isSignedIn) {
     return (
       <div className={classes.root}>
-        <Typography variant="h6">
-          We take voter anonymity seriously. We make you log in to your uOttawa account to track that you have voted but
+        <Typography variant="body1" component="p" gutterBottom>
+          We take voter anonymity very seriously. We only ask you to log in with your uOttawa email to let us know that you have voted but
           {' '}
           <strong>we can never trace back to who you voted for.</strong>
         </Typography>
+        <Typography className={classes.margin} variant="body1" component="p" gutterBottom>
+          We recommend viewing this website through Mozilla Firefox, Google Chrome (or a browser based on Chromium), Microsoft Edge or Safari.
+        </Typography>
         <GoogleLogin
+          className={classes.margin}
           clientId="911039919657-o235c8rl1qr59hlnr2djoiuivqbqmib2.apps.googleusercontent.com"
-          buttonText="Login"
+          buttonText="Log in with your uOttawa email"
           hostedDomain="uottawa.ca"
           onSuccess={loginResponse}
           onFailure={loginResponse}
