@@ -19,6 +19,7 @@ import request from '../network';
 import MessageCard from '../components/MessageCard';
 import AlreadyVotedCard from '../components/AlreadyVotedCard';
 import SuccessfullyVotedCard from '../components/SuccessfullyVotedCard';
+import VoteConfirmationDialog from '../components/VoteConfirmationDialog';
 
 const useStyles = makeStyles({
   root: {
@@ -45,6 +46,8 @@ function Vote() {
   const [isLoading, setLoading] = useState(true);
   const [candidatesObj, setCandidates] = useState([]);
   const [selected, setSelected] = useState([]);
+
+  const [showConfirmationDialog, setShowDialog] = useState(false);
 
   let counter = 0;
   const messageQueue = [];
@@ -94,7 +97,12 @@ function Vote() {
         Object.entries(data)
           .reduce((obj, [position, candidates]) => {
             const newObj = obj;
-            newObj[position] = candidates.filter(({ name }) => name === 'Abstain')[0].id;
+            const { id, position: positionName, name: candidate } = candidates.filter(({ name }) => name === 'Abstain')[0];
+            newObj[position] = {
+              id,
+              position: positionName,
+              name: candidate,
+            };
             return newObj;
           }, {}),
       );
@@ -108,6 +116,10 @@ function Vote() {
   }, []);
 
   const classes = useStyles();
+
+  if (localStorage.getItem('token') === null) {
+    return <Redirect to="/login" />;
+  }
 
   if (!canVote) {
     return (
@@ -131,14 +143,25 @@ function Vote() {
 
   function handleChange(event) {
     const node = event.target;
+
     const position = node.parentNode.parentNode.parentNode.parentNode.getAttribute('aria-label');
+
+    const radioButton = node.parentNode.parentNode.parentNode;
+    const id = radioButton.children[0].children[0].children[1].getAttribute('value');
+    const name = radioButton.children[1].innerText;
+
     setSelected({
       ...selected,
-      [position]: node.value,
+      [position]: {
+        position,
+        id,
+        name,
+      },
     });
   }
 
   async function submitVote() {
+    closeConfirmationDialog();
     showMessage('Submitting vote...');
     const { ok, status, body } = await request
       .post('/vote/submit')
@@ -148,6 +171,7 @@ function Vote() {
 
     try {
       if (ok) {
+        localStorage.removeItem('token');
         setSuccessfullyVoted(true);
       } else if (status === 409) {
         setAlreadyVoted(true);
@@ -170,6 +194,14 @@ function Vote() {
     return <SuccessfullyVotedCard />;
   }
 
+  function handleShowConfirmationDialog() {
+    setShowDialog(true);
+  }
+
+  function closeConfirmationDialog() {
+    setShowDialog(false);
+  }
+
   return (
     <>
       <Typography className={classes.instructions} variant="body1" gutterBottom>
@@ -190,7 +222,7 @@ function Vote() {
                 .map(([position, candidates], index) => (
                   <div key={position}>
                     <FormLabel key={`${position}-header`} component="legend" className={index > 0 ? classes.subHeader : ''}>{position}</FormLabel>
-                    <RadioGroup aria-label={position} name={position} value={selected[position].toString()} onChange={handleChange}>
+                    <RadioGroup aria-label={position} name={position} value={selected[position].id.toString()} onChange={handleChange}>
                       {candidates.map(({ id, name }) => (
                         <FormControlLabel
                           key={`${position}-${name}`}
@@ -206,7 +238,7 @@ function Vote() {
           </FormControl>
         </CardContent>
         <CardActions>
-          <Button size="small" color="secondary" onClick={() => submitVote()}>
+          <Button size="small" color="secondary" onClick={() => handleShowConfirmationDialog()}>
             Submit
           </Button>
         </CardActions>
@@ -225,6 +257,12 @@ function Vote() {
           'aria-describedby': 'message-id',
         }}
         message={<span id="message-id">{messageInfo.message}</span>}
+      />
+      <VoteConfirmationDialog
+        show={showConfirmationDialog}
+        handleConfirmation={submitVote}
+        positions={selected}
+        handleCancel={closeConfirmationDialog}
       />
     </>
   );
