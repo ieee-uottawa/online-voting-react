@@ -42,6 +42,7 @@ function Vote() {
   const [canVoteBody, setCanVoteBody] = useState(undefined);
   const [hasAlreadyVoted, setAlreadyVoted] = useState(false);
   const [hasSuccessfullyVoted, setSuccessfullyVoted] = useState(false);
+  const [isSessionValid, setSessionValid] = useState(true);
 
   const [isLoading, setLoading] = useState(true);
   const [candidatesObj, setCandidates] = useState([]);
@@ -137,7 +138,7 @@ function Vote() {
   async function submitVote() {
     closeConfirmationDialog();
     showMessage('Submitting vote...');
-    const { ok, status, body } = await request
+    const { ok, unauthorized, status, body } = await request
       .post('/vote/submit')
       .ok(res => res.status < 500)
       .send({
@@ -147,10 +148,11 @@ function Vote() {
       .set('Authorization', `Bearer ${localStorage.getItem('token')}`);
 
     try {
-      console.log(ok, status, body);
       if (ok) {
         localStorage.removeItem('token');
         setSuccessfullyVoted(true);
+      } else if (unauthorized) {
+        setSessionValid(false);
       } else if (status === 409) {
         setAlreadyVoted(true);
       } else if (status === 412) {
@@ -191,6 +193,20 @@ function Vote() {
         <CircularProgress />
         <MessageCard message="Loading..." />
       </div>
+    );
+  }
+
+  if (!isSessionValid) {
+    localStorage.removeItem('token');
+    return (
+      <Redirect
+        to={{
+          pathname: '/login',
+          state: {
+            message: 'Your session has expired! Please log in again to submit your vote.',
+          },
+        }}
+      />
     );
   }
 

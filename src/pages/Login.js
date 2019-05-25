@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Redirect } from 'react-router-dom';
 import { GoogleLogin } from 'react-google-login';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import Snackbar from '@material-ui/core/Snackbar';
 import { makeStyles } from '@material-ui/styles';
 
 import request from '../network';
@@ -18,7 +19,7 @@ const useStyles = makeStyles({
   },
 });
 
-function Login() {
+function Login(props) {
   const [canVote, setCanVote] = useState(true);
   const [canVoteBody, setCanVoteBody] = useState(undefined);
   const [hasAlreadyVoted, setAlreadyVoted] = useState(false);
@@ -27,6 +28,44 @@ function Login() {
   const [isValidVoter, setIsValidVoter] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+
+  let counter = 0;
+  const messageQueue = [];
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [messageInfo, setMessageInfo] = useState({});
+
+  function showMessage(message) {
+    messageQueue.push({
+      // eslint-disable-next-line no-plusplus
+      key: counter++,
+      message,
+    });
+
+    if (showSnackbar) {
+      setShowSnackbar(false);
+    } else {
+      processQueue();
+    }
+  }
+
+  function processQueue() {
+    if (messageQueue.length > 0) {
+      setMessageInfo(messageQueue.shift());
+      setShowSnackbar(true);
+    }
+  }
+
+  function handleSnackbarClose() {
+    setShowSnackbar(false);
+  }
+
+  function handleSnackbarExit() {
+    processQueue();
+  }
+
+  useEffect(() => {
+    if (props.location.state) showMessage(props.location.state.message);
+  }, [props.location.state]);
 
   async function loginResponse({ tokenId, profileObj }) {
     if (tokenId) {
@@ -111,6 +150,22 @@ function Login() {
           onSuccess={loginResponse}
           onFailure={loginResponse}
         />
+        {props.location.state &&
+          <Snackbar
+            key={messageInfo.key}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            open={showSnackbar}
+            onClose={handleSnackbarClose}
+            onExited={handleSnackbarExit}
+            ContentProps={{
+              'aria-describedby': 'message-id',
+            }}
+            message={<span id="message-id">{messageInfo.message}</span>}
+          />
+        }
       </div>
     );
   }
